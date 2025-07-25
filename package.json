@@ -4,33 +4,33 @@
   "private": true,
   "main": "main.js",
   "scripts": {
-    "dev": "next dev",
+    "start": "electron .",
+    "dev": "electron .",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "start-electron": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "pnpm run build-electron && electron-builder"
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "com.your-app.name",
-    "productName": "Your App Name",
+    "appId": "com.example.goods-reminder",
+    "productName": "Goods Reminder",
     "directories": {
       "output": "dist"
     },
     "files": [
       "main.js",
+      "preload.js",
+      "goodsData.js",
       "out/**/*",
       "node_modules/**/*"
     ],
-    "mac": {
-      "category": "public.app-category.utilities"
-    },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "public/icon.ico"
     },
-    "linux": {
-      "target": "AppImage"
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   },
   "dependencies": {

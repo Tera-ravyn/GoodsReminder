@@ -205,7 +205,10 @@ export default function GoodsReminder() {
         }
       } catch (error) {
         console.error("拉取出错:", error);
-        alert("拉取过程中发生错误: " + error.message);
+        alert(
+          "拉取过程中发生错误: " +
+            (error instanceof Error ? error.message : "未知错误")
+        );
       } finally {
         setIsGitOperationRunning(false);
       }
@@ -227,7 +230,10 @@ export default function GoodsReminder() {
         }
       } catch (error) {
         console.error("推送出错:", error);
-        alert("推送过程中发生错误: " + error.message);
+        alert(
+          "推送过程中发生错误: " +
+            (error instanceof Error ? error.message : "未知错误")
+        );
       } finally {
         setIsGitOperationRunning(false);
       }

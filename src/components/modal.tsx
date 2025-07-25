@@ -293,9 +293,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
 
   // 计算总金额
   const calculateTotalAmount = () => {
-    return details
-      .reduce((sum, item) => sum + item.quantity * item.price, 0)
-      .toFixed(2);
+    return details.reduce((sum, item) => sum + item.quantity * item.price, 0);
   };
 
   // 保存表单
@@ -596,7 +594,10 @@ export function GitIntroModal({
         console.log("Remote URL:", result.url);
       }
     } catch (error) {
-      console.log("Failed to get remote URL:", error.message);
+      console.log(
+        "Failed to get remote URL:",
+        error instanceof Error ? error.message : "未知错误"
+      );
     }
   };
 
@@ -620,7 +621,7 @@ export function GitIntroModal({
       alert("Git 配置已保存并初始化成功！");
       onClose();
     } catch (error) {
-      alert(`操作失败: ${error.message}`);
+      alert(`操作失败: ${error instanceof Error ? error.message : "未知错误"}`);
     } finally {
       setIsProcessing(false);
     }
@@ -654,7 +655,9 @@ export function GitIntroModal({
 
       alert("连接测试成功！");
     } catch (error) {
-      alert(`连接测试失败: ${error.message}`);
+      alert(
+        `连接测试失败: ${error instanceof Error ? error.message : "未知错误"}`
+      );
     } finally {
       setIsProcessing(false);
     }
