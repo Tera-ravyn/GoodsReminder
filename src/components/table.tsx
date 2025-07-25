@@ -277,7 +277,7 @@ export default function GoodsTable({
                       {item.shippingDate}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.totalAmount}
+                      {item.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {needAdditionalPayment(item) ? (

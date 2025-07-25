@@ -293,7 +293,9 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
 
   // 计算总金额
   const calculateTotalAmount = () => {
-    return details.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    return details
+      .reduce((sum, item) => sum + item.quantity * item.price, 0)
+      .toFixed(2);
   };
 
   // 保存表单
