@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import GoodsTable from "./table";
 import { EditModal, GitIntroModal } from "./modal";
+import {
+  gitCommitPush,
+  readGoodsData,
+  saveGoodsData,
+  gitPull,
+} from "../../../src-tauri/src-tauri";
 
 interface SubItem {
   name: string;
@@ -19,6 +25,7 @@ interface GoodsItem {
   details: SubItem[];
   paidAmount: number;
   totalAmount: number;
+  ip: string;
 }
 
 const initData: GoodsItem = {
@@ -36,6 +43,7 @@ const initData: GoodsItem = {
   ],
   paidAmount: 0,
   totalAmount: 0,
+  ip: "",
 };
 
 export default function GoodsReminder() {
@@ -59,13 +67,9 @@ export default function GoodsReminder() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 检查是否在Electron环境中
-        if (typeof window !== "undefined" && (window as any).electronAPI) {
-          const data = await (window as any).electronAPI.readGoodsData();
-          setItems(data);
-        } else {
-          setItems([]);
-        }
+        const { success, data, error } = await readGoodsData();
+        if (success) setItems(data);
+        else console.error("读取数据失败:", error);
       } catch (error) {
         console.error("加载数据失败:", error);
         setItems([]);
@@ -105,20 +109,18 @@ export default function GoodsReminder() {
         const updatedItems = items.filter((item) => item.id !== id);
 
         // 保存到Electron
-        if (typeof window !== "undefined" && (window as any).electronAPI) {
-          const result = await (window as any).electronAPI.saveGoodsData(
-            updatedItems
-          );
-          if (result.success) {
-            setItems(updatedItems);
-          } else {
-            console.error("删除失败:", result.error);
-            alert("删除失败: " + result.error);
-          }
-        } else {
-          // 开发环境下直接更新状态
+        // if (typeof window !== "undefined" && (window as any).__TAURI__) {
+        const result = await saveGoodsData(updatedItems);
+        if (result.success) {
           setItems(updatedItems);
+        } else {
+          console.error("删除失败:", result.error);
+          alert("删除失败: " + result.error);
         }
+        // } else {
+        //   // 开发环境下直接更新状态
+        //   setItems(updatedItems);
+        // }
       } catch (error) {
         console.error("删除出错:", error);
         alert("删除过程中发生错误");
@@ -164,20 +166,12 @@ export default function GoodsReminder() {
         updatedItems = [...items, { ...updatedItem, id }];
       }
 
-      // 保存到Electron
-      if (typeof window !== "undefined" && (window as any).electronAPI) {
-        const result = await (window as any).electronAPI.saveGoodsData(
-          updatedItems
-        );
-        if (result.success) {
-          setItems(updatedItems);
-        } else {
-          console.error("保存失败:", result.error);
-          alert("保存失败: " + result.error);
-        }
-      } else {
-        // 开发环境下直接更新状态
+      const result = await saveGoodsData(updatedItems);
+      if (result.success) {
         setItems(updatedItems);
+      } else {
+        console.error("保存失败:", result.error);
+        alert("保存失败: " + result.error);
       }
 
       closeEditModal();
@@ -190,54 +184,53 @@ export default function GoodsReminder() {
   };
 
   const handlePull = async () => {
-    if (typeof window !== "undefined" && (window as any).electronAPI) {
-      if (isGitOperationRunning) return;
-      setIsGitOperationRunning(true);
-      try {
-        const result = await (window as any).electronAPI.gitPull();
-        if (result.success) {
-          alert("数据已成功从远程仓库拉取");
-          // 重新加载数据以显示最新内容
-          const data = await (window as any).electronAPI.readGoodsData();
-          setItems(data);
-        } else {
-          alert("拉取失败: " + result.error);
-        }
-      } catch (error) {
-        console.error("拉取出错:", error);
-        alert(
-          "拉取过程中发生错误: " +
-            (error instanceof Error ? error.message : "未知错误")
-        );
-      } finally {
-        setIsGitOperationRunning(false);
+    if (isGitOperationRunning) return;
+    setIsGitOperationRunning(true);
+    try {
+      const result = await gitPull();
+      if (result.success) {
+        alert("数据已成功从远程仓库拉取");
+        // 重新加载数据以显示最新内容
+        const { success, data, error } = await readGoodsData();
+        if (success) setItems(data);
+        else console.error("读取数据失败:", error);
+      } else {
+        alert("拉取失败: " + result.error);
       }
+    } catch (error) {
+      console.error("拉取出错:", error);
+      alert(
+        "拉取过程中发生错误: " +
+          (error instanceof Error ? error.message : "未知错误")
+      );
+    } finally {
+      setIsGitOperationRunning(false);
     }
+    // }
   };
 
   const handlePush = async () => {
-    if (typeof window !== "undefined" && (window as any).electronAPI) {
-      if (isGitOperationRunning) return;
-      setIsGitOperationRunning(true);
-      try {
-        const result = await (window as any).electronAPI.gitCommitPush(
-          "Update goods data from Goods Reminder"
-        );
-        if (result.success) {
-          alert("数据已成功推送到远程仓库");
-        } else {
-          alert("推送失败: " + result.error);
-        }
-      } catch (error) {
-        console.error("推送出错:", error);
-        alert(
-          "推送过程中发生错误: " +
-            (error instanceof Error ? error.message : "未知错误")
-        );
-      } finally {
-        setIsGitOperationRunning(false);
+    if (isGitOperationRunning) return;
+    setIsGitOperationRunning(true);
+    try {
+      const result = await gitCommitPush(
+        "Update goods data from Goods Reminder"
+      );
+      if (result.success) {
+        alert("数据已成功推送到远程仓库");
+      } else {
+        alert("推送失败: " + result.error);
       }
+    } catch (error) {
+      console.error("推送出错:", error);
+      alert(
+        "推送过程中发生错误: " +
+          (error instanceof Error ? error.message : "未知错误")
+      );
+    } finally {
+      setIsGitOperationRunning(false);
     }
+    // }
   };
 
   if (isLoading) {

@@ -2,9 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { DetailModal, EditModal } from "./modal";
-import { StatusTag } from "./statusTag";
+import { StatusTag } from "../statusTag";
+import { CustomSelect } from "../select";
 
 interface SubItem {
   name: string;
@@ -21,6 +21,7 @@ interface GoodsItem {
   details: SubItem[];
   paidAmount: number;
   totalAmount: number;
+  ip: string;
 }
 
 interface GoodsTableProps {
@@ -39,8 +40,10 @@ export default function GoodsTable({
   const [filteredItems, setFilteredItems] = useState<GoodsItem[]>([]);
   const [leaderFilter, setLeaderFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [ipFilter, setIpFilter] = useState<string>("");
   const [leaders, setLeaders] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
+  const [ips, setIps] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<GoodsItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -49,9 +52,13 @@ export default function GoodsTable({
     // 提取所有团长和状态
     const allLeaders = Array.from(new Set(items.map((item) => item.leader)));
     const allStatuses = Array.from(new Set(items.map((item) => item.status)));
+    const allIps = Array.from(
+      new Set(items.map((item) => item.ip).filter((ip) => ip))
+    );
 
     setLeaders(allLeaders);
     setStatuses(allStatuses);
+    setIps(allIps);
     setFilteredItems(items);
   }, [items]);
 
@@ -66,7 +73,14 @@ export default function GoodsTable({
 
     // 按状态筛选
     if (statusFilter) {
-      result = result.filter((item) => item.status === statusFilter);
+      if (statusFilter === "未完成") {
+        result = result.filter((item) => item.status !== "已完成");
+      } else result = result.filter((item) => item.status === statusFilter);
+    }
+
+    if (ipFilter) {
+      result = result.filter((item) => item.ip === ipFilter);
+      console.log(result, ipFilter);
     }
 
     // 按出荷日期升序排列
@@ -77,7 +91,7 @@ export default function GoodsTable({
     });
 
     setFilteredItems(result);
-  }, [items, leaderFilter, statusFilter]);
+  }, [items, leaderFilter, statusFilter, ipFilter]);
 
   // 计算是否需要补款
   const needAdditionalPayment = (item: GoodsItem) => {
@@ -89,6 +103,7 @@ export default function GoodsTable({
   const resetFilters = () => {
     setLeaderFilter("");
     setStatusFilter("");
+    setIpFilter("");
   };
 
   // 打开详情模态框
@@ -117,19 +132,17 @@ export default function GoodsTable({
                 >
                   按团长筛选
                 </label>
-                <select
-                  id="leader-filter"
+                <CustomSelect
                   value={leaderFilter}
-                  onChange={(e) => setLeaderFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="">所有团长</option>
-                  {leaders.map((leader) => (
-                    <option key={leader} value={leader}>
-                      {leader}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setLeaderFilter}
+                  options={[
+                    ...leaders.map((leader) => ({
+                      value: leader,
+                      label: leader,
+                    })),
+                  ]}
+                  placeholder="所有团长"
+                />
               </div>
 
               <div>
@@ -139,22 +152,39 @@ export default function GoodsTable({
                 >
                   按状态筛选
                 </label>
-                <select
-                  id="status-filter"
+                <CustomSelect
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                >
-                  <option value="">所有状态</option>
-                  {statuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setStatusFilter}
+                  options={[
+                    { value: "未完成", label: "未完成" },
+                    ...statuses.map((status) => ({
+                      value: status,
+                      label: status,
+                    })),
+                  ]}
+                  placeholder="所有状态"
+                />
               </div>
-
-              {(leaderFilter || statusFilter) && (
+              <div>
+                <label
+                  htmlFor="ip-filter"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  按IP筛选
+                </label>
+                <CustomSelect
+                  value={ipFilter}
+                  onChange={setIpFilter}
+                  options={[
+                    ...ips.map((ip) => ({
+                      value: ip,
+                      label: ip,
+                    })),
+                  ]}
+                  placeholder="所有IP"
+                />
+              </div>
+              {(leaderFilter || statusFilter || ipFilter) && (
                 <div className="self-end">
                   <button
                     onClick={resetFilters}
@@ -217,6 +247,12 @@ export default function GoodsTable({
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
+                    IP
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     团长
                   </th>
                   <th
@@ -259,6 +295,9 @@ export default function GoodsTable({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {item.productName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.ip}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div

@@ -1,5 +1,9 @@
-// src/components/DetailModal.tsx
 import { useEffect, useState } from "react";
+import {
+  gitCommitPush,
+  gitGetRemoteUrl,
+  gitInit,
+} from "../../../src-tauri/src-tauri";
 
 interface SubItem {
   name: string;
@@ -16,6 +20,7 @@ interface GoodsItem {
   details: SubItem[];
   paidAmount: number;
   totalAmount: number;
+  ip: string;
 }
 
 interface ModalProps {
@@ -89,6 +94,10 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
             <div>
               <p className="text-sm text-gray-500">商品名称</p>
               <p className="font-medium">{item.productName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">商品IP</p>
+              <p className="font-medium">{item.ip}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">团长</p>
@@ -220,6 +229,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   const [status, setStatus] = useState("");
   const [shippingDate, setShippingDate] = useState("");
   const [paidAmount, setPaidAmount] = useState("");
+  const [ip, setIp] = useState("");
   const [details, setDetails] = useState<SubItem[]>([
     { name: "", quantity: 1, price: 0 },
   ]);
@@ -232,6 +242,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
       setStatus(item.status);
       setShippingDate(item.shippingDate);
       setPaidAmount(item.paidAmount.toString());
+      setIp(item.ip || "");
       setDetails(
         item.details.length > 0
           ? [...item.details]
@@ -300,7 +311,14 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productName || !leader || !status || !shippingDate || !paidAmount) {
+    if (
+      !productName ||
+      !leader ||
+      !status ||
+      !shippingDate ||
+      !paidAmount ||
+      !ip
+    ) {
       alert("请填写所有必填字段");
       return;
     }
@@ -316,6 +334,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
       details: [...details],
       paidAmount: parseFloat(paidAmount),
       totalAmount: calculateTotalAmount(),
+      ip,
     };
     onSave(updatedItem);
   };
@@ -356,6 +375,18 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   onChange={(e) => setProductName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="输入商品名称"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  商品IP *
+                </label>
+                <input
+                  type="text"
+                  value={ip}
+                  onChange={(e) => setIp(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入商品IP"
                 />
               </div>
               <div>
@@ -583,15 +614,15 @@ export function GitIntroModal({
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // 获取当前的远程仓库URL
   const fetchRemoteUrl = async () => {
     try {
-      const result = await (window as any).electronAPI.gitGetRemoteUrl();
+      const result = await gitGetRemoteUrl();
       if (result.success) {
-        setRepoUrl(result.url);
-        console.log("Remote URL:", result.url);
+        setRepoUrl(result.data);
+        console.log("Remote URL:", result.data);
       }
     } catch (error) {
       console.log(
@@ -611,7 +642,7 @@ export function GitIntroModal({
     setIsProcessing(true);
     try {
       // 初始化 Git 仓库
-      const initResult = await (window as any).electronAPI.gitInit(repoUrl);
+      const initResult = await gitInit(repoUrl);
       if (!initResult.success) {
         alert(`初始化失败: ${initResult.error}`);
         setIsProcessing(false);
@@ -636,7 +667,7 @@ export function GitIntroModal({
     setIsProcessing(true);
     try {
       // 初始化 Git 仓库
-      const initResult = await (window as any).electronAPI.gitInit(repoUrl);
+      const initResult = await gitInit(repoUrl);
       if (!initResult.success) {
         alert(`连接测试失败: ${initResult.error}`);
         setIsProcessing(false);
@@ -644,7 +675,7 @@ export function GitIntroModal({
       }
 
       // 尝试推送一次
-      const commitResult = await (window as any).electronAPI.gitCommitPush(
+      const commitResult = await gitCommitPush(
         "Initial commit from Goods Reminder"
       );
       if (!commitResult.success) {
