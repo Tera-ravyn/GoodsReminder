@@ -524,7 +524,6 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="单价"
-                        min="0"
                         step="0.01"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
@@ -538,7 +537,6 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                         value={(detail.price * detail.quantity).toFixed(2)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
                         placeholder="金额"
-                        min="0"
                         step="0.01"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
