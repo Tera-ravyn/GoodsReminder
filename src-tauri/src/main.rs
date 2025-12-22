@@ -260,6 +260,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             read_goods_data,
             save_goods_data,
+            read_storage_data,
+            save_storage_data,
             open_local_file,
             init_git_repo,
             git_add_commit_push,

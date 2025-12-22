@@ -1,32 +1,38 @@
 // src/components/storage/storage-modal.tsx
 import { useEffect, useState } from "react";
 
-interface SubItem {
+interface BundledItem {
+  id: string;
   name: string;
   quantity: number;
-  price: number;
   status: "自留" | "待售" | "在架" | "售出";
-  soldPrice?: number;
 }
 
-interface GoodsItem {
+interface StorageItem {
   id: string;
-  productName: string;
   ip: string;
-  details: SubItem[];
-  paidAmount: number;
-  totalAmount: number;
+  status: "自留" | "待售" | "在架" | "售出";
+  productName: string; //商品名称
+  category: string; //商品类别
+  character: string; //相关角色
+  purchasePrice: number; //买入价格
+  sellingPrice: number; //售出价格
+  quantity: number; //商品数量
+  soldQuantity: number; //卖出数量
   remark: string;
+  // 捆绑商品相关字段
+  bundledItems?: BundledItem[];
+  masterItem?: { id: string; name: string };
 }
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item: GoodsItem | null;
-  onSave: (updatedItem: GoodsItem) => void;
+  item: StorageItem | null;
+  onSave: (updatedItem: StorageItem) => void;
 }
 
-const subItemStatuses = ["自留", "待售", "在架", "售出"];
+const statuses = ["自留", "待售", "在架", "售出"];
 
 export function DetailModal({ isOpen, onClose, item }: ModalProps) {
   // 处理ESC键关闭模态框
@@ -51,15 +57,10 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
 
   if (!isOpen || !item) return null;
 
-  // 计算回血金额
-  const recoveryAmount = item.details
-    .filter((detail) => detail.status === "售出")
-    .reduce((sum, detail) => sum + (detail.soldPrice || 0), 0);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-lg"
+        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 模态框头部 */}
@@ -77,23 +78,48 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <p className="text-sm text-gray-500">IP</p>
+              <p className="font-medium">{item.ip}</p>
+            </div>
+            <div></div>
+            <div>
               <p className="text-sm text-gray-500">商品名称</p>
               <p className="font-medium">{item.productName}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">IP地址</p>
-              <p className="font-medium">{item.ip}</p>
+              <p className="text-sm text-gray-500">商品类别</p>
+              <p className="font-medium">{item.category || "-"}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">相关角色</p>
+              <p className="font-medium">{item.character || "-"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">已付款金额</p>
+              <p className="text-sm text-gray-500">状态</p>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {item.status}
+              </span>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">商品数量</p>
+              <p className="font-medium">{item.quantity}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">售出数量</p>
+              <p className="font-medium">{item.soldQuantity}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">买入价</p>
               <p className="font-medium text-green-600">
-                ¥{item.paidAmount.toFixed(2)}
+                ¥{item.purchasePrice.toFixed(2)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">回血金额</p>
+              <p className="text-sm text-gray-500">卖出价</p>
               <p className="font-medium text-green-600">
-                ¥{recoveryAmount.toFixed(2)}
+                ¥{item.sellingPrice.toFixed(2)}
               </p>
             </div>
             <div className="md:col-span-2">
@@ -111,25 +137,34 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      序号
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       子物品名称
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       数量
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      单价 (¥)
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       状态
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      售出金额 (¥)
+                      买入价 (¥)
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      售出价 (¥)
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      是否已卖出
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                {/* <tbody className="bg-white divide-y divide-gray-200">
                   {item.details.map((detail, index) => (
                     <tr key={index}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                        {index + 1}
+                      </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                         {detail.name}
                       </td>
@@ -137,17 +172,20 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
                         {detail.quantity}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                        {detail.price.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {detail.status}
                         </span>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        {detail.price.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                         {detail.status === "售出"
                           ? (detail.soldPrice || 0).toFixed(2)
                           : "-"}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        {detail.status === "售出" ? "是" : "否"}
                       </td>
                     </tr>
                   ))}
@@ -155,22 +193,90 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                       总计
                     </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"></td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                       {item.details.reduce(
                         (sum, detail) => sum + detail.quantity,
                         0
                       )}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"></td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500"></td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"></td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                      {recoveryAmount.toFixed(2)}
+                      {sellingPrice.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {soldCount}/{totalCount}
                     </td>
                   </tr>
-                </tbody>
+                </tbody> */}
               </table>
             </div>
           </div>
+
+          {/* 捆绑商品信息 */}
+          {(item.bundledItems && item.bundledItems.length > 0) ||
+          item.masterItem ? (
+            <div>
+              <h4 className="text-md font-medium text-gray-900 mb-2">
+                捆绑商品信息
+              </h4>
+
+              {item.bundledItems && item.bundledItems.length > 0 ? (
+                // 捆绑了其他商品
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 text-sm font-medium text-gray-900">
+                    捆绑的商品列表
+                  </div>
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          商品名
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          数量
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          状态
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {item.bundledItems.map((bundledItem, index) => (
+                        <tr key={index}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {bundledItem.name}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                            {bundledItem.quantity}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {bundledItem.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : item.masterItem ? (
+                // 被其他商品捆绑
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 text-sm font-medium text-gray-900">
+                    主商品信息
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-500">
+                      该商品被以下商品捆绑:
+                    </p>
+                    <p className="font-medium">{item.masterItem.name}</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         {/* 模态框底部 */}
@@ -191,24 +297,26 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
 export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   const [productName, setProductName] = useState("");
   const [ip, setIp] = useState("");
-  const [paidAmount, setPaidAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [character, setCharacter] = useState("");
+  const [status, setStatus] = useState("自留");
+  const [purchasePrice, setpurchasePrice] = useState("");
+  const [sellingPrice, setsellingPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [soldQuantity, setSoldQuantity] = useState("");
   const [remark, setRemark] = useState("");
-  const [details, setDetails] = useState<SubItem[]>([
-    { name: "", quantity: 1, price: 0, status: "自留" },
-  ]);
 
   // 初始化表单数据
   useEffect(() => {
     if (item && isOpen) {
       setProductName(item.productName);
       setIp(item.ip);
-      setPaidAmount(item.paidAmount.toString());
+      setCategory(item.category || "");
+      setCharacter(item.character || "");
+      setpurchasePrice(item.purchasePrice?.toString());
+      setsellingPrice(item.sellingPrice?.toString());
+      setQuantity(item.quantity?.toString());
       setRemark(item.remark || "");
-      setDetails(
-        item.details.length > 0
-          ? [...item.details]
-          : [{ name: "", quantity: 1, price: 0, status: "自留" }]
-      );
     }
   }, [item, isOpen]);
 
@@ -232,56 +340,26 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
     };
   }, [isOpen, onClose]);
 
-  // 处理子物品变化
-  const handleDetailChange = (
-    index: number,
-    field: keyof SubItem,
-    value: string | number
-  ) => {
-    const newDetails = [...details];
-    newDetails[index] = { ...newDetails[index], [field]: value };
-    setDetails(newDetails);
-  };
-
-  // 添加新的子物品
-  const addDetail = () => {
-    setDetails([
-      ...details,
-      { name: "", quantity: 1, price: 0, status: "自留" },
-    ]);
-  };
-
-  // 删除子物品
-  const removeDetail = (index: number) => {
-    if (details.length > 1) {
-      const newDetails = details.filter((_, i) => i !== index);
-      setDetails(newDetails);
-    }
-  };
-
-  // 计算总金额
-  const calculateTotalAmount = () => {
-    return details.reduce((sum, item) => sum + item.quantity * item.price, 0);
-  };
-
   // 保存表单
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productName || !ip || !paidAmount) {
+    if (!productName || !ip || !purchasePrice) {
       alert("请填写所有必填字段");
       return;
     }
 
     if (!item) return;
 
-    const updatedItem: GoodsItem = {
+    const updatedItem: StorageItem = {
       ...item,
       productName,
       ip,
-      details: [...details],
-      paidAmount: parseFloat(paidAmount),
-      totalAmount: calculateTotalAmount(),
+      category,
+      character,
+      purchasePrice: parseFloat(purchasePrice),
+      sellingPrice: parseFloat(sellingPrice) || 0,
+      quantity: parseInt(quantity) || 0,
       remark,
     };
     onSave(updatedItem);
@@ -297,7 +375,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
       >
         {/* 模态框头部 */}
         <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-          <h3 className="text-lg font-medium text-gray-900">编辑商品</h3>
+          <h3 className="text-lg font-medium text-gray-900">编辑库存</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 text-2xl font-bold leading-none"
@@ -312,7 +390,20 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  商品名称 *
+                  IP
+                </label>
+                <input
+                  type="text"
+                  value={ip}
+                  onChange={(e) => setIp(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入IP"
+                />
+              </div>
+              <div></div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  商品名称
                 </label>
                 <input
                   type="text"
@@ -324,39 +415,95 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  IP地址 *
+                  商品类别
                 </label>
                 <input
                   type="text"
-                  value={ip}
-                  onChange={(e) => setIp(e.target.value)}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="输入IP地址"
+                  placeholder="输入商品类别"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  已付款金额 (¥) *
+                  相关角色
+                </label>
+                <input
+                  type="text"
+                  value={character}
+                  onChange={(e) => setCharacter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入相关角色"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  当前状态 *
+                </label>
+                <select
+                  value={status}
+                  title="status"
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {statuses.map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  商品数量
                 </label>
                 <input
                   type="number"
-                  value={paidAmount}
-                  onChange={(e) => setPaidAmount(e.target.value)}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="输入已付款金额"
+                  placeholder="输入商品数量"
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  售出数量
+                </label>
+                <input
+                  type="number"
+                  value={soldQuantity}
+                  onChange={(e) => setSoldQuantity(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入售出数量"
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  买入金额 (¥) *
+                </label>
+                <input
+                  type="number"
+                  value={purchasePrice}
+                  onChange={(e) => setpurchasePrice(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入买入金额"
                   min="0"
                   step="0.01"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  总金额 (¥)
+                  售出金额 (¥)
                 </label>
                 <input
-                  type="text"
-                  value={Number(calculateTotalAmount()).toFixed(2)}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                  type="number"
+                  value={sellingPrice}
+                  onChange={(e) => setsellingPrice(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入售出金额"
+                  min="0"
+                  step="0.01"
                 />
               </div>
               <div className="md:col-span-2">
@@ -372,138 +519,6 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                 />
               </div>
             </div>
-
-            {/* 子物品详情 */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  子商品详情 *
-                </label>
-                <button
-                  type="button"
-                  onClick={addDetail}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  + 添加子商品
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-2 text-sm text-gray-400 mb-2">
-                <div className="md:col-span-3">商品名称</div>
-                <div className="md:col-span-1">数量</div>
-                <div className="md:col-span-2">单价</div>
-                <div className="md:col-span-2">状态</div>
-                <div className="md:col-span-2">售出金额</div>
-              </div>
-
-              <div className="space-y-2">
-                {details.map((detail, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center"
-                  >
-                    <div className="md:col-span-3">
-                      <input
-                        type="text"
-                        value={detail.name}
-                        onChange={(e) =>
-                          handleDetailChange(index, "name", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="子商品名称"
-                      />
-                    </div>
-                    <div className="md:col-span-1">
-                      <input
-                        type="number"
-                        value={detail.quantity}
-                        onChange={(e) =>
-                          handleDetailChange(
-                            index,
-                            "quantity",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="数量"
-                        min="1"
-                      />
-                    </div>
-                    <div className="md:col-span-2 relative">
-                      <input
-                        type="number"
-                        value={detail.price}
-                        onChange={(e) =>
-                          handleDetailChange(
-                            index,
-                            "price",
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="单价"
-                        min="0"
-                        step="0.01"
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
-                        ¥
-                      </div>
-                    </div>
-                    <div className="md:col-span-2">
-                      <select
-                        value={detail.status}
-                        onChange={(e) =>
-                          handleDetailChange(
-                            index,
-                            "status",
-                            e.target.value as "自留" | "待售" | "在架" | "售出"
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {subItemStatuses.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="md:col-span-2 relative">
-                      <input
-                        type="number"
-                        value={detail.soldPrice || ""}
-                        onChange={(e) =>
-                          handleDetailChange(
-                            index,
-                            "soldPrice",
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="售出金额"
-                        min="0"
-                        step="0.01"
-                        disabled={detail.status !== "售出"}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
-                        ¥
-                      </div>
-                    </div>
-                    <div className="md:col-span-2 flex items-center">
-                      {details.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeDetail(index)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          删除
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* 模态框底部 */}
@@ -517,6 +532,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
             </button>
             <button
               type="submit"
+              onClick={handleSave}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               保存

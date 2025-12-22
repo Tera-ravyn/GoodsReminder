@@ -15,24 +15,54 @@ interface SubItem {
   soldPrice?: number; // 售出金额
 }
 
-interface GoodsItem {
+interface BundledItem {
   id: string;
-  productName: string;
+  name: string;
+  quantity: number;
+  status: "自留" | "待售" | "在架" | "售出";
+}
+interface StorageItem {
+  id: string;
   ip: string;
-  details: SubItem[];
-  paidAmount: number;
-  totalAmount: number;
-  remark: string; // 备注字段
+  status: "自留" | "待售" | "在架" | "售出";
+  productName: string; //商品名称
+  category: string; //商品类别
+  character: string; //相关角色
+  purchasePrice: number; //买入价格
+  sellingPrice: number; //售出价格
+  quantity: number; //商品数量
+  soldQuantity: number; //卖出数量
+  remark: string;
+  // 捆绑商品相关字段
+  bundledItems?: BundledItem[];
+  masterItem?: { id: string; name: string };
 }
 
 export default function Storage() {
-  const [items, setItems] = useState<GoodsItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<GoodsItem[]>([]);
+  const [items, setItems] = useState<StorageItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<StorageItem[]>([]);
   const [ipFilter, setIpFilter] = useState<string>("");
   const [ips, setIps] = useState<string[]>([]);
-  const [selectedItem, setSelectedItem] = useState<GoodsItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<StorageItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 初始化数据
+  const initData: StorageItem = {
+    id: "",
+    ip: "",
+    status: "自留",
+    productName: "",
+    category: "",
+    character: "",
+    purchasePrice: 0,
+    sellingPrice: 0,
+    quantity: 1,
+    soldQuantity: 0,
+    remark: "",
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,6 +79,61 @@ export default function Storage() {
     };
     loadData();
   }, []);
+
+  // 编辑项目
+  const handleEdit = (item: StorageItem) => {
+    openEditModal(item);
+  };
+
+  // 添加新项目
+  const handleAdd = () => {
+    openEditModal(initData);
+  };
+
+  // 打开编辑
+  const openEditModal = (item: StorageItem | null) => {
+    setSelectedItem(item);
+    setIsEditModalOpen(true);
+  };
+
+  // 关闭编辑
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  // 保存编辑
+  const handleSaveEdit = async (updatedItem: StorageItem) => {
+    try {
+      let updatedItems: StorageItem[] = [];
+
+      if (selectedItem && selectedItem?.id !== "") {
+        // 更新现有项目
+        updatedItems = items.map((item) =>
+          item.id === selectedItem.id ? updatedItem : item
+        );
+      } else {
+        // 新增项目
+        const id = crypto.randomUUID();
+        updatedItems = [...items, { ...updatedItem, id }];
+      }
+
+      const result = await saveStorageData(updatedItems);
+      if (result.success) {
+        setItems(updatedItems);
+      } else {
+        console.error("保存失败:", result.error);
+        alert("保存失败: " + result.error);
+      }
+
+      closeEditModal();
+    } catch (error) {
+      console.error("保存出错:", error);
+      alert("保存过程中发生错误");
+    }
+
+    closeEditModal();
+  };
 
   // 提取所有IP
   useEffect(() => {
@@ -72,35 +157,8 @@ export default function Storage() {
     setFilteredItems(result);
   }, [items, ipFilter]);
 
-  // 计算统计数据
-  const calculateStats = () => {
-    if (!ipFilter) return { totalPaid: 0, totalSold: 0, netConsumption: 0 };
-
-    const ipItems = items.filter((item) => item.ip === ipFilter);
-
-    // 总购入金额（已付款金额）
-    const totalPaid = ipItems.reduce((sum, item) => sum + item.paidAmount, 0);
-
-    // 总售出金额（所有售出状态子商品的售出金额）
-    const totalSold = ipItems.reduce((sum, item) => {
-      return (
-        sum +
-        item.details
-          .filter((detail) => detail.status === "售出")
-          .reduce((detailSum, detail) => detailSum + (detail.soldPrice || 0), 0)
-      );
-    }, 0);
-
-    // 净消费金额 = 总购入 - 总售出
-    const netConsumption = totalPaid - totalSold;
-
-    return { totalPaid, totalSold, netConsumption };
-  };
-
-  const { totalPaid, totalSold, netConsumption } = calculateStats();
-
   // 打开详情模态框
-  const openDetailModal = (item: GoodsItem) => {
+  const openDetailModal = (item: StorageItem) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
   };
@@ -128,72 +186,6 @@ export default function Storage() {
         console.error("删除出错:", error);
         alert("删除过程中发生错误");
       }
-    }
-  };
-
-  // 更新子商品状态
-  const updateSubItemStatus = async (
-    itemId: string,
-    subItemIndex: number,
-    newStatus: "自留" | "待售" | "在架" | "售出"
-  ) => {
-    try {
-      const updatedItems = items.map((item) => {
-        if (item.id === itemId) {
-          const updatedDetails = [...item.details];
-          updatedDetails[subItemIndex] = {
-            ...updatedDetails[subItemIndex],
-            status: newStatus,
-          };
-          return { ...item, details: updatedDetails };
-        }
-        return item;
-      });
-
-      setItems(updatedItems);
-
-      // 保存到本地
-      const result = await saveStorageData(updatedItems);
-      if (!result.success) {
-        console.error("更新失败:", result.error);
-        alert("更新失败: " + result.error);
-      }
-    } catch (error) {
-      console.error("更新出错:", error);
-      alert("更新过程中发生错误");
-    }
-  };
-
-  // 更新子商品售出金额
-  const updateSubItemSoldPrice = async (
-    itemId: string,
-    subItemIndex: number,
-    soldPrice: number
-  ) => {
-    try {
-      const updatedItems = items.map((item) => {
-        if (item.id === itemId) {
-          const updatedDetails = [...item.details];
-          updatedDetails[subItemIndex] = {
-            ...updatedDetails[subItemIndex],
-            soldPrice: soldPrice,
-          };
-          return { ...item, details: updatedDetails };
-        }
-        return item;
-      });
-
-      setItems(updatedItems);
-
-      // 保存到本地
-      const result = await saveStorageData(updatedItems);
-      if (!result.success) {
-        console.error("更新失败:", result.error);
-        alert("更新失败: " + result.error);
-      }
-    } catch (error) {
-      console.error("更新出错:", error);
-      alert("更新过程中发生错误");
     }
   };
 
@@ -237,7 +229,7 @@ export default function Storage() {
             </div>
 
             {/* 统计信息 */}
-            {ipFilter && (
+            {/* {ipFilter && (
               <div className="flex flex-wrap gap-4">
                 <div className="text-center">
                   <p className="text-sm text-gray-500">总购入金额</p>
@@ -262,7 +254,28 @@ export default function Storage() {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
+
+            <div className="flex-shrink-0">
+              <button
+                onClick={handleAdd}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg
+                  className="-ml-1 mr-2 h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                新增
+              </button>
+            </div>
           </div>
         </div>
 
@@ -290,25 +303,49 @@ export default function Storage() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    商品名
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
                     IP
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    回血金额
+                    商品名
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    子商品详情
+                    角色
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    数量
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    状态
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    买入价
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    售价
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    售出
                   </th>
                   <th
                     scope="col"
@@ -320,80 +357,36 @@ export default function Storage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredItems.map((item, index) => {
-                  // 计算该商品的回血金额（售出子商品的售出金额总和）
-                  const recoveryAmount = item.details
-                    .filter((detail) => detail.status === "售出")
-                    .reduce((sum, detail) => sum + (detail.soldPrice || 0), 0);
-
                   return (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {index + 1}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.ip}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.productName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.ip}
+                        {item.character}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                        ¥{recoveryAmount.toFixed(2)}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.soldQuantity}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        <div className="space-y-1">
-                          {item.details.map((detail, detailIndex) => (
-                            <div
-                              key={detailIndex}
-                              className="flex items-center gap-2"
-                            >
-                              <span className="font-medium">{detail.name}</span>
-                              <span className="text-gray-400">
-                                x{detail.quantity}
-                              </span>
-                              <span>¥{detail.price.toFixed(2)}</span>
-                              <select
-                                value={detail.status}
-                                onChange={(e) =>
-                                  updateSubItemStatus(
-                                    item.id,
-                                    detailIndex,
-                                    e.target.value as
-                                      | "自留"
-                                      | "待售"
-                                      | "在架"
-                                      | "售出"
-                                  )
-                                }
-                                className="text-xs border rounded px-1 py-0.5"
-                              >
-                                <option value="自留">自留</option>
-                                <option value="待售">待售</option>
-                                <option value="在架">在架</option>
-                                <option value="售出">售出</option>
-                              </select>
-                              {detail.status === "售出" && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-gray-500">售价:</span>
-                                  <input
-                                    type="number"
-                                    value={detail.soldPrice || ""}
-                                    onChange={(e) =>
-                                      updateSubItemSoldPrice(
-                                        item.id,
-                                        detailIndex,
-                                        parseFloat(e.target.value) || 0
-                                      )
-                                    }
-                                    className="w-20 text-xs border rounded px-1 py-0.5"
-                                    placeholder="售出金额"
-                                    step="0.01"
-                                    min="0"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ¥{item.purchasePrice.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ¥{item.sellingPrice.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.soldQuantity}/{item.quantity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
@@ -425,6 +418,16 @@ export default function Storage() {
           onClose={closeDetailModal}
           item={selectedItem}
           onSave={() => {}}
+        />
+      )}
+
+      {/* 编辑模态框 */}
+      {selectedItem && (
+        <EditModal
+          isOpen={isEditModalOpen}
+          onClose={closeEditModal}
+          item={selectedItem}
+          onSave={handleSaveEdit}
         />
       )}
     </>
