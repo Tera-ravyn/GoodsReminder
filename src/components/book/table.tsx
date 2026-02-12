@@ -5,38 +5,14 @@ import { useState, useEffect } from "react";
 import { DetailModal, EditModal } from "./modal";
 import { StatusTag } from "../statusTag";
 import { CustomSelect } from "../select";
-
-interface SubItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface GoodsItem {
-  id: string;
-  productName: string;
-  leader: string;
-  status: string;
-  shippingDate: string;
-  details: SubItem[];
-  paidAmount: number;
-  totalAmount: number;
-  ip: string;
-}
-
-interface GoodsTableProps {
-  items: GoodsItem[];
-  onEdit: (item: GoodsItem) => void;
-  onDelete: (id: string) => void;
-  onAdd: () => void;
-}
+import { GoodsItem, TableProps } from "./types";
 
 export default function GoodsTable({
   items,
   onEdit,
   onDelete,
   onAdd,
-}: GoodsTableProps) {
+}: TableProps) {
   const [filteredItems, setFilteredItems] = useState<GoodsItem[]>([]);
   const [leaderFilter, setLeaderFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -53,7 +29,7 @@ export default function GoodsTable({
     const allLeaders = Array.from(new Set(items.map((item) => item.leader)));
     const allStatuses = Array.from(new Set(items.map((item) => item.status)));
     const allIps = Array.from(
-      new Set(items.map((item) => item.ip).filter((ip) => ip))
+      new Set(items.map((item) => item.ip).filter((ip) => ip)),
     );
 
     setLeaders(allLeaders);

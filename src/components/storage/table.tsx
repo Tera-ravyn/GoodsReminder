@@ -5,46 +5,22 @@ import { useState, useEffect } from "react";
 import { DetailModal, EditModal } from "./modal";
 import { StatusTag } from "../statusTag";
 import { CustomSelect } from "../select";
+import { StorageItem, TableProps } from "./types";
 
-interface SubItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface GoodsItem {
-  id: string;
-  productName: string;
-  leader: string;
-  status: string;
-  shippingDate: string;
-  details: SubItem[];
-  paidAmount: number;
-  totalAmount: number;
-  ip: string;
-}
-
-interface GoodsTableProps {
-  items: GoodsItem[];
-  onEdit: (item: GoodsItem) => void;
-  onDelete: (id: string) => void;
-  onAdd: () => void;
-}
-
-export default function GoodsTable({
+export default function StorageTable({
   items,
   onEdit,
   onDelete,
   onAdd,
-}: GoodsTableProps) {
-  const [filteredItems, setFilteredItems] = useState<GoodsItem[]>([]);
+}: TableProps) {
+  const [filteredItems, setFilteredItems] = useState<StorageItem[]>([]);
   const [leaderFilter, setLeaderFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [ipFilter, setIpFilter] = useState<string>("");
   const [leaders, setLeaders] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
   const [ips, setIps] = useState<string[]>([]);
-  const [selectedItem, setSelectedItem] = useState<GoodsItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<StorageItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // 初始化筛选选项
@@ -53,7 +29,7 @@ export default function GoodsTable({
     const allLeaders = Array.from(new Set(items.map((item) => item.leader)));
     const allStatuses = Array.from(new Set(items.map((item) => item.status)));
     const allIps = Array.from(
-      new Set(items.map((item) => item.ip).filter((ip) => ip))
+      new Set(items.map((item) => item.ip).filter((ip) => ip)),
     );
 
     setLeaders(allLeaders);
@@ -73,9 +49,7 @@ export default function GoodsTable({
 
     // 按状态筛选
     if (statusFilter) {
-      if (statusFilter === "未完成") {
-        result = result.filter((item) => item.status !== "已完成");
-      } else result = result.filter((item) => item.status === statusFilter);
+      result = result.filter((item) => item.status === statusFilter);
     }
 
     if (ipFilter) {
@@ -83,21 +57,8 @@ export default function GoodsTable({
       console.log(result, ipFilter);
     }
 
-    // 按出荷日期升序排列
-    result.sort((a, b) => {
-      return (
-        new Date(a.shippingDate).getTime() - new Date(b.shippingDate).getTime()
-      );
-    });
-
     setFilteredItems(result);
   }, [items, leaderFilter, statusFilter, ipFilter]);
-
-  // 计算是否需要补款
-  const needAdditionalPayment = (item: GoodsItem) => {
-    const total = item.details.reduce((sum, subItem) => sum + subItem.price, 0);
-    return item.paidAmount < total;
-  };
 
   // 重置筛选
   const resetFilters = () => {
@@ -107,7 +68,7 @@ export default function GoodsTable({
   };
 
   // 打开详情模态框
-  const openDetailModal = (item: GoodsItem) => {
+  const openDetailModal = (item: StorageItem) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
   };
@@ -241,43 +202,49 @@ export default function GoodsTable({
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    商品名
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
                     IP
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    团长
+                    发售主题
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    当前状态
+                    角色
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    出荷日期
+                    数量
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    总金额
+                    状态
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    是否需要补款
+                    买入价
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    售价
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    已售
                   </th>
                   <th
                     scope="col"
@@ -294,40 +261,36 @@ export default function GoodsTable({
                       {index + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.productName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {item.ip}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.productName}
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div
                         className="text-blue-600 hover:text-blue-900 hover:underline cursor-pointer"
                         onClick={() => {
-                          setLeaderFilter(item.leader);
+                          setLeaderFilter(item.character);
                         }}
                       >
-                        {item.leader}
+                        {item.character}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <StatusTag status={item.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.shippingDate}
+                      {item.purchasePrice.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.totalAmount.toFixed(2)}
+                      {item.sellingPrice.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {needAdditionalPayment(item) ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          需要补款
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          无需补款
-                        </span>
-                      )}
+                      {item.soldQuantity}/{item.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

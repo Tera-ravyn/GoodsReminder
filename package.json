@@ -7,13 +7,7 @@
     "start": "electron .",
     "dev": "next dev",
     "electron": "electron .",
-    "build": "next build",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "postinstall": "electron-builder install-app-deps",
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "build": "next build"
   },
   "build": {
     "appId": "com.example.goods-reminder",
@@ -56,9 +50,6 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "electron": "^37.2.4",
-    "electron-builder": "^26.0.12",
-    "electron-is-dev": "^3.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8",

@@ -4,24 +4,7 @@ import {
   gitGetRemoteUrl,
   gitInit,
 } from "../../../src-tauri/src-tauri";
-
-interface SubItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface GoodsItem {
-  id: string;
-  productName: string;
-  leader: string;
-  status: string;
-  shippingDate: string;
-  details: SubItem[];
-  paidAmount: number;
-  totalAmount: number;
-  ip: string;
-}
+import { GoodsItem, SubItem } from "./types";
 
 interface ModalProps {
   isOpen: boolean;
@@ -160,7 +143,7 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                       {item.details.reduce(
                         (sum, detail) => sum + detail.quantity,
-                        0
+                        0,
                       )}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900"></td>
@@ -246,7 +229,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
       setDetails(
         item.details.length > 0
           ? [...item.details]
-          : [{ name: "", quantity: 1, price: 0 }]
+          : [{ name: "", quantity: 1, price: 0 }],
       );
     }
   }, [item, isOpen]);
@@ -282,7 +265,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   const handleDetailChange = (
     index: number,
     field: keyof SubItem,
-    value: string | number
+    value: string | number,
   ) => {
     const newDetails = [...details];
     newDetails[index] = { ...newDetails[index], [field]: value };
@@ -503,7 +486,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                           handleDetailChange(
                             index,
                             "quantity",
-                            parseInt(e.target.value) || 0
+                            parseInt(e.target.value) || 0,
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -519,7 +502,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                           handleDetailChange(
                             index,
                             "price",
-                            parseFloat(e.target.value) || 0
+                            parseFloat(e.target.value) || 0,
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -625,7 +608,7 @@ export function GitIntroModal({
     } catch (error) {
       console.log(
         "Failed to get remote URL:",
-        error instanceof Error ? error.message : "未知错误"
+        error instanceof Error ? error.message : "未知错误",
       );
     }
   };
@@ -674,7 +657,7 @@ export function GitIntroModal({
 
       // 尝试推送一次
       const commitResult = await gitCommitPush(
-        "Initial commit from Goods Reminder"
+        "Initial commit from Goods Reminder",
       );
       if (!commitResult.success) {
         alert(`推送测试失败: ${commitResult.error}`);
@@ -685,7 +668,7 @@ export function GitIntroModal({
       alert("连接测试成功！");
     } catch (error) {
       alert(
-        `连接测试失败: ${error instanceof Error ? error.message : "未知错误"}`
+        `连接测试失败: ${error instanceof Error ? error.message : "未知错误"}`,
       );
     } finally {
       setIsProcessing(false);

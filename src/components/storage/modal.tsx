@@ -1,30 +1,6 @@
 // src/components/storage/storage-modal.tsx
 import { useEffect, useState } from "react";
-
-interface BundledItem {
-  id: string;
-  name: string;
-  quantity: number;
-  status: "自留" | "待售" | "在架" | "售出";
-}
-
-interface StorageItem {
-  id: string;
-  ip: string;
-  status: "自留" | "待售" | "在架" | "售出";
-  productName: string; //商品名称
-  category: string; //商品类别
-  character: string; //相关角色
-  purchasePrice: number; //买入价格
-  sellingPrice: number; //售出价格
-  quantity: number; //商品数量
-  soldQuantity: number; //卖出数量
-  remark: string;
-  // 捆绑商品相关字段
-  bundledItems?: BundledItem[];
-  masterItem?: { id: string; name: string };
-}
-
+import { StorageItem } from "./types";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -297,7 +273,7 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
 export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   const [productName, setProductName] = useState("");
   const [ip, setIp] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string[]>([]);
   const [character, setCharacter] = useState("");
   const [status, setStatus] = useState("自留");
   const [purchasePrice, setpurchasePrice] = useState("");
@@ -311,7 +287,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
     if (item && isOpen) {
       setProductName(item.productName);
       setIp(item.ip);
-      setCategory(item.category || "");
+      setCategory(item.category);
       setCharacter(item.character || "");
       setpurchasePrice(item.purchasePrice?.toString());
       setsellingPrice(item.sellingPrice?.toString());
