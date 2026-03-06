@@ -9,35 +9,6 @@
     "electron": "electron .",
     "build": "next build"
   },
-  "build": {
-    "appId": "com.example.goods-reminder",
-    "productName": "Goods Reminder",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "goodsData.js",
-      "out/**/*",
-      "node_modules/**/*",
-      "!node_modules/**/{test,__tests__,tests,*.md,*.txt,*.spec.js,*.test.js}",
-      "!node_modules/**/test*/**",
-      "!node_modules/**/docs/**",
-      "!node_modules/**/examples/**",
-      "!node_modules/**/CHANGELOG*",
-      "!node_modules/**/README*",
-      "!node_modules/**/LICENSE*"
-    ],
-    "win": {
-      "target": "portable",
-      "icon": "public/icon.ico"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  },
   "dependencies": {
     "@tauri-apps/api": "^2.7.0",
     "next": "14.1.0",

@@ -158,7 +158,7 @@ export default function GoodsReminder() {
       if (selectedItem && selectedItem?.id !== "") {
         // 更新现有项目
         updatedItems = items.map((item) =>
-          item.id === selectedItem.id ? updatedItem : item
+          item.id === selectedItem.id ? updatedItem : item,
         );
       } else {
         // 新增项目
@@ -201,7 +201,7 @@ export default function GoodsReminder() {
       console.error("拉取出错:", error);
       alert(
         "拉取过程中发生错误: " +
-          (error instanceof Error ? error.message : "未知错误")
+          (error instanceof Error ? error.message : "未知错误"),
       );
     } finally {
       setIsGitOperationRunning(false);
@@ -214,7 +214,7 @@ export default function GoodsReminder() {
     setIsGitOperationRunning(true);
     try {
       const result = await gitCommitPush(
-        "Update goods data from Goods Reminder"
+        "Update goods data from Goods Reminder",
       );
       if (result.success) {
         alert("数据已成功推送到远程仓库");
@@ -225,7 +225,7 @@ export default function GoodsReminder() {
       console.error("推送出错:", error);
       alert(
         "推送过程中发生错误: " +
-          (error instanceof Error ? error.message : "未知错误")
+          (error instanceof Error ? error.message : "未知错误"),
       );
     } finally {
       setIsGitOperationRunning(false);

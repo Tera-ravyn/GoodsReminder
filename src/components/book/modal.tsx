@@ -254,13 +254,6 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
     };
   }, [isOpen, onClose]);
 
-  // 处理模态框外部点击关闭
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   // 处理子物品变化
   const handleDetailChange = (
     index: number,
@@ -325,10 +318,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
   if (!isOpen || !item) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-      // onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
       <div
         className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-lg"
         onClick={(e) => e.stopPropagation()}
@@ -639,42 +629,6 @@ export function GitIntroModal({
     }
   };
 
-  const handleTestConnection = async () => {
-    if (!repoUrl.trim()) {
-      alert("请输入仓库地址");
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      // 初始化 Git 仓库
-      const initResult = await gitInit(repoUrl);
-      if (!initResult.success) {
-        alert(`连接测试失败: ${initResult.error}`);
-        setIsProcessing(false);
-        return;
-      }
-
-      // 尝试推送一次
-      const commitResult = await gitCommitPush(
-        "Initial commit from Goods Reminder",
-      );
-      if (!commitResult.success) {
-        alert(`推送测试失败: ${commitResult.error}`);
-        setIsProcessing(false);
-        return;
-      }
-
-      alert("连接测试成功！");
-    } catch (error) {
-      alert(
-        `连接测试失败: ${error instanceof Error ? error.message : "未知错误"}`,
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -749,14 +703,6 @@ export function GitIntroModal({
               >
                 读取已经配置的地址
               </button>
-              {/* <button
-                type="button"
-                onClick={handleTestConnection}
-                disabled={isProcessing}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-              >
-                {isProcessing ? "测试中..." : "测试连接"}
-              </button> */}
               <button
                 type="submit"
                 disabled={isProcessing}

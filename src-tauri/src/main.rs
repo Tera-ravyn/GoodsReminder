@@ -114,11 +114,38 @@ fn init_git_repo(repo_url: String, data_dir: String) -> Result<String, String> {
         let output = Command::new("git")
             .current_dir(&data_dir)
             .arg("init")
+            .arg("-b")
+            .arg("main")
             .output()
             .map_err(|e| e.to_string())?;
             
         if !output.status.success() {
             return Err(String::from_utf8_lossy(&output.stderr).to_string());
+        }
+    }else {
+        // 如果仓库已存在，确保当前分支是 main
+        let branch_output = Command::new("git")
+            .current_dir(&data_dir)
+            .arg("branch")
+            .arg("--show-current")
+            .output()
+            .map_err(|e| e.to_string())?;
+        
+        let current_branch = String::from_utf8_lossy(&branch_output.stdout).trim().to_string();
+        if current_branch == "master" {
+            // 重命名分支为 main
+            let rename_output = Command::new("git")
+                .current_dir(&data_dir)
+                .arg("branch")
+                .arg("-m")
+                .arg("master")
+                .arg("main")
+                .output()
+                .map_err(|e| e.to_string())?;
+            
+            if !rename_output.status.success() {
+                return Err(String::from_utf8_lossy(&rename_output.stderr).to_string());
+            }
         }
     }
     
@@ -153,6 +180,56 @@ fn init_git_repo(repo_url: String, data_dir: String) -> Result<String, String> {
 
 #[tauri::command]
 fn git_add_commit_push(data_dir: String, commit_message: String) -> Result<String, String> {
+    // 1. 检查仓库地址是否为空
+    let remote_url_output = Command::new("git")
+        .current_dir(&data_dir)
+        .arg("remote")
+        .arg("get-url")
+        .arg("origin")
+        .output()
+        .map_err(|e| e.to_string())?;
+    
+    if !remote_url_output.status.success() {
+        return Err("未配置远程仓库地址，请先初始化 Git 仓库".to_string());
+    }
+    
+    let remote_url = String::from_utf8_lossy(&remote_url_output.stdout).trim().to_string();
+    if remote_url.is_empty() {
+        return Err("远程仓库地址为空，请配置有效的仓库地址".to_string());
+    }
+    
+    // 2. 检查 upstream 是否匹配
+    let upstream_output = Command::new("git")
+        .current_dir(&data_dir)
+        .arg("rev-parse")
+        .arg("--abbrev-ref")
+        .arg("--symbolic-full-name")
+        .arg("@{u}")
+        .output()
+        .map_err(|e| e.to_string())?;
+    
+    if !upstream_output.status.success() {
+        // 没有设置 upstream，尝试设置
+        let setup_upstream = Command::new("git")
+            .current_dir(&data_dir)
+            .arg("branch")
+            .arg("--set-upstream-to")
+            .arg("origin/main")
+            .arg("main")
+            .output()
+            .map_err(|e| e.to_string())?;
+        
+        if !setup_upstream.status.success() {
+            return Err("无法设置 upstream 分支，请检查远程仓库配置".to_string());
+        }
+    } else {
+        // 验证 upstream 是否指向 origin/main
+        let upstream_ref = String::from_utf8_lossy(&upstream_output.stdout).trim().to_string();
+        if !upstream_ref.contains("origin/main") && !upstream_ref.contains("origin/master") {
+            return Err(format!("upstream 不匹配：当前为 {}，期望为 origin/main", upstream_ref));
+        }
+    }
+    
     // git add goodsData.json
     let output = Command::new("git")
         .current_dir(&data_dir)
@@ -175,7 +252,6 @@ fn git_add_commit_push(data_dir: String, commit_message: String) -> Result<Strin
         .map_err(|e| e.to_string())?;
     
     if !output.status.success() {
-        // 检查是否是因为没有更改
         let stderr = String::from_utf8_lossy(&output.stderr);
         if stderr.contains("nothing to commit") {
             return Ok("No changes to commit".to_string());
