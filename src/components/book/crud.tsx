@@ -9,6 +9,7 @@ import {
   saveGoodsData,
   gitPull,
 } from "../../../src-tauri/src-tauri";
+import { ConfigModal, ConfigProvider } from "../config";
 
 interface SubItem {
   name: string;
@@ -62,6 +63,7 @@ export default function GoodsReminder() {
   const [selectedItem, setSelectedItem] = useState<GoodsItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isGitModalOpen, setIsGitModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isGitOperationRunning, setIsGitOperationRunning] = useState(false);
 
   useEffect(() => {
@@ -233,6 +235,10 @@ export default function GoodsReminder() {
     // }
   };
 
+  const handleConfig = async () => {
+    setIsConfigModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="w-5/6">
@@ -250,72 +256,81 @@ export default function GoodsReminder() {
         <h2 className="text-2xl font-bold">周边预订管理</h2>
         <div className="flex gap-x-4">
           <button
-            title="help"
-            onClick={openGitModal}
-            className="bg-gray-500 text-white px-4 py-2 rounded-md flex items-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={handlePull}
+            title="config"
+            onClick={handleConfig}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {isGitOperationRunning ? (
-              "请稍候..."
-            ) : (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                从Git拉取
-              </>
-            )}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" />
           </button>
-          <button
-            onClick={handlePush}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            {isGitOperationRunning ? (
-              "请稍候..."
-            ) : (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  style={{ transform: "rotate(180deg)" }}
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                推送到Git
-              </>
-            )}
-          </button>
+          <div className="flex gap-x-4">
+            <button
+              title="help"
+              onClick={openGitModal}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handlePull}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {isGitOperationRunning ? (
+                "请稍候..."
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  从Git拉取
+                </>
+              )}
+            </button>
+            <button
+              onClick={handlePush}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              {isGitOperationRunning ? (
+                "请稍候..."
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    style={{ transform: "rotate(180deg)" }}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  推送到Git
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -335,6 +350,12 @@ export default function GoodsReminder() {
         isOpen={isGitModalOpen}
         onClose={() => setIsGitModalOpen(false)}
       />
+      <ConfigProvider>
+        <ConfigModal
+          isOpen={isConfigModalOpen}
+          onClose={() => setIsConfigModalOpen(false)}
+        />
+      </ConfigProvider>
     </div>
   );
 }

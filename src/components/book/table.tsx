@@ -99,7 +99,7 @@ export default function GoodsTable({
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {/* 筛选和操作栏 */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-6">
               <div>
                 <label
@@ -172,7 +172,21 @@ export default function GoodsTable({
               )}
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center gap-4">
+              <div>
+                <div className="text-sm text-gray-500">
+                  当前页面尾款：
+                  {filteredItems
+                    .reduce((sum, item) => sum + item.paidAmount, 0)
+                    .toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-500">
+                  总尾款：
+                  {filteredItems
+                    .reduce((sum, item) => sum + item.totalAmount, 0)
+                    .toFixed(2)}
+                </div>
+              </div>
               <button
                 onClick={onAdd}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

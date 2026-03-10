@@ -174,3 +174,36 @@ export const gitGetRemoteUrl = async () => {
     return { success: false, error: error.toString() };
   }
 };
+
+export const readConfig = async () => {
+  try {
+    const { data: dataDir } = await getDataDir();
+    if (!dataDir) {
+      throw new Error("无法获取数据目录");
+    }
+
+    const config = await invoke("read_config", { dataDir });
+    return { success: true, data: JSON.parse(config) };
+  } catch (error) {
+    console.error("读取配置失败:", error);
+    return { success: false, error: error.toString() };
+  }
+};
+
+export const saveConfig = async (config) => {
+  try {
+    const { data: dataDir } = await getDataDir();
+    if (!dataDir) {
+      throw new Error("无法获取数据目录");
+    }
+
+    await invoke("save_config", {
+      dataDir,
+      config: JSON.stringify(config, null, 2),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("保存配置失败:", error);
+    return { success: false, error: error.toString() };
+  }
+};

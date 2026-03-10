@@ -94,6 +94,49 @@ fn save_storage_data(data_dir: String, data: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn read_config(data_dir: String) -> Result<String, String> {
+    let file_path = format!("{}/config.json", data_dir);
+    
+    // 检查目录是否存在
+    let dir_path = std::path::Path::new(&data_dir);
+    if !dir_path.exists() {
+        eprintln!("[Rust] 数据目录不存在: {}", data_dir);
+        return Ok("[]".to_string());
+    }
+    
+    // 检查文件是否存在
+    let path = std::path::Path::new(&file_path);
+    if !path.exists() {
+        eprintln!("[Rust] 文件不存在: {}，返回空数组", file_path);
+        return Ok("[]".to_string());
+    }
+    
+    match fs::read_to_string(&file_path) {
+        Ok(content) => {
+            println!("[Rust] 成功读取文件，长度: {}", content.len());
+            Ok(content)
+        },
+        Err(e) => {
+            eprintln!("[Rust] 读取文件失败: {} ({})", e, file_path);
+            Ok("[]".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+fn save_config(data_dir: String, data: String) -> Result<(), String> {
+    let file_path = format!("{}/config.json", data_dir);
+    
+    // 确保目录存在
+    if let Some(parent) = Path::new(&file_path).parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    
+    fs::write(&file_path, data).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn open_local_file() -> Result<String, String> {
     // 这里可以实现文件选择对话框
     // 为简化，我们返回一个默认路径
@@ -338,6 +381,8 @@ fn main() {
             save_goods_data,
             read_storage_data,
             save_storage_data,
+            read_config,
+            save_config,
             open_local_file,
             init_git_repo,
             git_add_commit_push,
