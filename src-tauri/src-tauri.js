@@ -50,14 +50,14 @@ export const saveGoodsData = async (data) => {
   }
 };
 // 读取商品数据
-export const readStorageData = async () => {
+export const readStockData = async () => {
   try {
     const { data: dataDir } = await getDataDir();
     if (!dataDir) {
       throw new Error("无法获取数据目录");
     }
 
-    const data = await invoke("read_storage_data", { dataDir });
+    const data = await invoke("read_stock_data", { dataDir });
     return { success: true, data: JSON.parse(data) };
   } catch (error) {
     console.error("读取数据失败:", error);
@@ -66,14 +66,14 @@ export const readStorageData = async () => {
 };
 
 // 保存商品数据
-export const saveStorageData = async (data) => {
+export const saveStockData = async (data) => {
   try {
     const { data: dataDir } = await getDataDir();
     if (!dataDir) {
       throw new Error("无法获取数据目录");
     }
 
-    await invoke("save_storage_data", {
+    await invoke("save_stock_data", {
       dataDir,
       data: JSON.stringify(data, null, 2),
     });
@@ -116,7 +116,7 @@ export const gitInit = async (repoUrl) => {
       throw new Error("无法获取数据目录");
     }
 
-    const result = await invoke("init_git_repo", { repoUrl, dataDir });
+    const result = await invoke("git_init", { repoUrl, dataDir });
     return { success: true, data: result };
   } catch (error) {
     console.error("初始化 Git 仓库失败:", error);
@@ -199,7 +199,7 @@ export const saveConfig = async (config) => {
 
     await invoke("save_config", {
       dataDir,
-      config: JSON.stringify(config, null, 2),
+      data: JSON.stringify(config, null, 2),
     });
     return { success: true };
   } catch (error) {

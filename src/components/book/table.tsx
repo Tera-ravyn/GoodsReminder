@@ -1,7 +1,7 @@
 // src/components/table.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { DetailModal, EditModal } from "./modal";
 import { StatusTag } from "../statusTag";
 import { CustomSelect } from "../select";
@@ -17,6 +17,9 @@ export default function GoodsTable({
   const [leaderFilter, setLeaderFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [ipFilter, setIpFilter] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [leaders, setLeaders] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
   const [ips, setIps] = useState<string[]>([]);
@@ -25,7 +28,6 @@ export default function GoodsTable({
 
   // 初始化筛选选项
   useEffect(() => {
-    // 提取所有团长和状态
     const allLeaders = Array.from(new Set(items.map((item) => item.leader)));
     const allStatuses = Array.from(new Set(items.map((item) => item.status)));
     const allIps = Array.from(
@@ -35,19 +37,48 @@ export default function GoodsTable({
     setLeaders(allLeaders);
     setStatuses(allStatuses);
     setIps(allIps);
-    setFilteredItems(items);
   }, [items]);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setSearchTerm(newValue);
+
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        setDebouncedSearchTerm(newValue);
+      }, 600);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // 应用筛选
   useEffect(() => {
     let result = [...items];
 
-    // 按团长筛选
+    if (debouncedSearchTerm) {
+      result = result.filter((item) =>
+        item.productName
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase()),
+      );
+    }
+
     if (leaderFilter) {
       result = result.filter((item) => item.leader === leaderFilter);
     }
 
-    // 按状态筛选
     if (statusFilter) {
       if (statusFilter === "未完成") {
         result = result.filter((item) => item.status !== "已完成");
@@ -56,10 +87,8 @@ export default function GoodsTable({
 
     if (ipFilter) {
       result = result.filter((item) => item.ip === ipFilter);
-      console.log(result, ipFilter);
     }
 
-    // 按出荷日期升序排列
     result.sort((a, b) => {
       return (
         new Date(a.shippingDate).getTime() - new Date(b.shippingDate).getTime()
@@ -67,28 +96,26 @@ export default function GoodsTable({
     });
 
     setFilteredItems(result);
-  }, [items, leaderFilter, statusFilter, ipFilter]);
+  }, [items, leaderFilter, statusFilter, ipFilter, debouncedSearchTerm]);
 
-  // 计算是否需要补款
   const needAdditionalPayment = (item: GoodsItem) => {
     const total = item.details.reduce((sum, subItem) => sum + subItem.price, 0);
     return item.paidAmount < total;
   };
 
-  // 重置筛选
   const resetFilters = () => {
     setLeaderFilter("");
     setStatusFilter("");
     setIpFilter("");
+    setSearchTerm("");
+    setDebouncedSearchTerm("");
   };
 
-  // 打开详情模态框
   const openDetailModal = (item: GoodsItem) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
   };
 
-  // 关闭详情模态框
   const closeDetailModal = () => {
     setIsDetailModalOpen(false);
     setSelectedItem(null);
@@ -118,6 +145,8 @@ export default function GoodsTable({
                     })),
                   ]}
                   placeholder="所有团长"
+                  searchable
+                  className="w-48"
                 />
               </div>
 
@@ -160,7 +189,25 @@ export default function GoodsTable({
                   placeholder="所有IP"
                 />
               </div>
-              {(leaderFilter || statusFilter || ipFilter) && (
+              <div>
+                <label
+                  htmlFor="search"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  搜索商品名
+                </label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入商品名搜索"
+                />
+              </div>
+              {(leaderFilter ||
+                statusFilter ||
+                ipFilter ||
+                debouncedSearchTerm) && (
                 <div className="self-end">
                   <button
                     onClick={resetFilters}
@@ -177,12 +224,30 @@ export default function GoodsTable({
                 <div className="text-sm text-gray-500">
                   当前页面尾款：
                   {filteredItems
-                    .reduce((sum, item) => sum + item.paidAmount, 0)
+                    .reduce(
+                      (sum, item) => sum + (item.totalAmount - item.paidAmount),
+                      0,
+                    )
                     .toFixed(2)}
                 </div>
                 <div className="text-sm text-gray-500">
                   总尾款：
+                  {items
+                    .reduce(
+                      (sum, item) => sum + (item.totalAmount - item.paidAmount),
+                      0,
+                    )
+                    .toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-500">
+                  当前页面金额：
                   {filteredItems
+                    .reduce((sum, item) => sum + item.totalAmount, 0)
+                    .toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-500">
+                  总金额：
+                  {items
                     .reduce((sum, item) => sum + item.totalAmount, 0)
                     .toFixed(2)}
                 </div>

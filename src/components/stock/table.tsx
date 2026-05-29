@@ -5,22 +5,22 @@ import { useState, useEffect } from "react";
 import { DetailModal, EditModal } from "./modal";
 import { StatusTag } from "../statusTag";
 import { CustomSelect } from "../select";
-import { StorageItem, TableProps } from "./types";
+import { StockItem, TableProps } from "./types";
 
-export default function StorageTable({
+export default function StockTable({
   items,
   onEdit,
   onDelete,
   onAdd,
 }: TableProps) {
-  const [filteredItems, setFilteredItems] = useState<StorageItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
   const [leaderFilter, setLeaderFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [ipFilter, setIpFilter] = useState<string>("");
   const [leaders, setLeaders] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
   const [ips, setIps] = useState<string[]>([]);
-  const [selectedItem, setSelectedItem] = useState<StorageItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // 初始化筛选选项
@@ -68,7 +68,7 @@ export default function StorageTable({
   };
 
   // 打开详情模态框
-  const openDetailModal = (item: StorageItem) => {
+  const openDetailModal = (item: StockItem) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
   };

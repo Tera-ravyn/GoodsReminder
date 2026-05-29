@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DetailModal, EditModal } from "../storage/modal";
+import { DetailModal, EditModal } from "./modal";
 import { StatusTag } from "../statusTag";
 import { CustomSelect } from "../select";
-import { readStorageData, saveStorageData } from "../../../src-tauri/src-tauri";
+import { readStockData, saveStockData } from "../../../src-tauri/src-tauri";
 
 interface SubItem {
   name: string;
@@ -21,7 +21,7 @@ interface BundledItem {
   quantity: number;
   status: "自留" | "待售" | "在架" | "售出";
 }
-interface StorageItem {
+interface StockItem {
   id: string;
   ip: string;
   status: "自留" | "待售" | "在架" | "售出";
@@ -38,19 +38,19 @@ interface StorageItem {
   masterItem?: { id: string; name: string };
 }
 
-export default function Storage() {
-  const [items, setItems] = useState<StorageItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<StorageItem[]>([]);
+export default function Stock() {
+  const [items, setItems] = useState<StockItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
   const [ipFilter, setIpFilter] = useState<string>("");
   const [ips, setIps] = useState<string[]>([]);
-  const [selectedItem, setSelectedItem] = useState<StorageItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // 初始化数据
-  const initData: StorageItem = {
+  const initData: StockItem = {
     id: "",
     ip: "",
     status: "自留",
@@ -67,7 +67,7 @@ export default function Storage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const { success, data, error } = await readStorageData();
+        const { success, data, error } = await readStockData();
         if (success) setItems(data);
         else console.error("读取数据失败:", error);
       } catch (error) {
@@ -81,7 +81,7 @@ export default function Storage() {
   }, []);
 
   // 编辑项目
-  const handleEdit = (item: StorageItem) => {
+  const handleEdit = (item: StockItem) => {
     openEditModal(item);
   };
 
@@ -91,7 +91,7 @@ export default function Storage() {
   };
 
   // 打开编辑
-  const openEditModal = (item: StorageItem | null) => {
+  const openEditModal = (item: StockItem | null) => {
     setSelectedItem(item);
     setIsEditModalOpen(true);
   };
@@ -103,14 +103,14 @@ export default function Storage() {
   };
 
   // 保存编辑
-  const handleSaveEdit = async (updatedItem: StorageItem) => {
+  const handleSaveEdit = async (updatedItem: StockItem) => {
     try {
-      let updatedItems: StorageItem[] = [];
+      let updatedItems: StockItem[] = [];
 
       if (selectedItem && selectedItem?.id !== "") {
         // 更新现有项目
         updatedItems = items.map((item) =>
-          item.id === selectedItem.id ? updatedItem : item
+          item.id === selectedItem.id ? updatedItem : item,
         );
       } else {
         // 新增项目
@@ -118,7 +118,7 @@ export default function Storage() {
         updatedItems = [...items, { ...updatedItem, id }];
       }
 
-      const result = await saveStorageData(updatedItems);
+      const result = await saveStockData(updatedItems);
       if (result.success) {
         setItems(updatedItems);
       } else {
@@ -138,7 +138,7 @@ export default function Storage() {
   // 提取所有IP
   useEffect(() => {
     const allIps = Array.from(
-      new Set(items.map((item) => item.ip).filter((ip) => ip))
+      new Set(items.map((item) => item.ip).filter((ip) => ip)),
     );
     setIps(allIps);
   }, [items]);
@@ -158,7 +158,7 @@ export default function Storage() {
   }, [items, ipFilter]);
 
   // 打开详情模态框
-  const openDetailModal = (item: StorageItem) => {
+  const openDetailModal = (item: StockItem) => {
     setSelectedItem(item);
     setIsDetailModalOpen(true);
   };
@@ -177,7 +177,7 @@ export default function Storage() {
         setItems(updatedItems);
 
         // 保存到本地
-        const result = await saveStorageData(updatedItems);
+        const result = await saveStockData(updatedItems);
         if (!result.success) {
           console.error("删除失败:", result.error);
           alert("删除失败: " + result.error);
@@ -286,8 +286,8 @@ export default function Storage() {
               {items.length === 0
                 ? "暂无数据"
                 : ipFilter
-                ? "该IP下暂无数据"
-                : "请选择IP进行查看"}
+                  ? "该IP下暂无数据"
+                  : "请选择IP进行查看"}
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">

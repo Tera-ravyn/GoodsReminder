@@ -11,12 +11,14 @@ import {
 } from "../../../src-tauri/src-tauri";
 import { ConfigModal, ConfigProvider } from "../config";
 
+// 物品详情字段
 interface SubItem {
   name: string;
   quantity: number;
   price: number;
 }
 
+// 主表字段
 interface GoodsItem {
   id: string;
   productName: string;
@@ -34,7 +36,7 @@ const initData: GoodsItem = {
   productName: "",
   leader: "",
   status: "未出荷",
-  shippingDate: "",
+  shippingDate: new Date().toISOString().split("T")[0],
   details: [
     {
       name: "",
@@ -52,7 +54,9 @@ export default function GoodsReminder() {
   const [name, setName] = useState("");
   const [leader, setLeader] = useState("");
   const [status, setStatus] = useState("");
-  const [shippingDate, setShippingDate] = useState("");
+  const [shippingDate, setShippingDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [details, setDetails] = useState<SubItem[]>([
     { name: "", quantity: 1, price: 0 },
   ]);

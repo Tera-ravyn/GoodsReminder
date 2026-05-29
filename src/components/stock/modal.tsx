@@ -1,11 +1,11 @@
-// src/components/storage/storage-modal.tsx
+// src/components/stock/stock-modal.tsx
 import { useEffect, useState } from "react";
-import { StorageItem } from "./types";
+import { StockItem } from "./types";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item: StorageItem | null;
-  onSave: (updatedItem: StorageItem) => void;
+  item: StockItem | null;
+  onSave: (updatedItem: StockItem) => void;
 }
 
 const statuses = ["自留", "待售", "在架", "售出"];
@@ -327,7 +327,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
 
     if (!item) return;
 
-    const updatedItem: StorageItem = {
+    const updatedItem: StockItem = {
       ...item,
       productName,
       ip,

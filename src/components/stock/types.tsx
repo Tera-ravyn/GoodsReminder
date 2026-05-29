@@ -1,6 +1,6 @@
 export interface TableProps {
-  items: StorageItem[];
-  onEdit: (item: StorageItem) => void;
+  items: StockItem[];
+  onEdit: (item: StockItem) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
 }
@@ -12,7 +12,7 @@ export interface BundledItem {
   status: "自留" | "待售" | "在架" | "售出";
 }
 
-export interface StorageItem {
+export interface StockItem {
   id: string;
   ip: string;
   status: "自留" | "待售" | "在架" | "售出";

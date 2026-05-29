@@ -51,8 +51,8 @@ fn save_goods_data(data_dir: String, data: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn read_storage_data(data_dir: String) -> Result<String, String> {
-    let file_path = format!("{}/storageData.json", data_dir);
+fn read_stock_data(data_dir: String) -> Result<String, String> {
+    let file_path = format!("{}/stockData.json", data_dir);
     
     // 检查目录是否存在
     let dir_path = std::path::Path::new(&data_dir);
@@ -81,8 +81,8 @@ fn read_storage_data(data_dir: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn save_storage_data(data_dir: String, data: String) -> Result<(), String> {
-    let file_path = format!("{}/storageData.json", data_dir);
+fn save_stock_data(data_dir: String, data: String) -> Result<(), String> {
+    let file_path = format!("{}/stockData.json", data_dir);
     
     // 确保目录存在
     if let Some(parent) = Path::new(&file_path).parent() {
@@ -125,14 +125,23 @@ fn read_config(data_dir: String) -> Result<String, String> {
 
 #[tauri::command]
 fn save_config(data_dir: String, data: String) -> Result<(), String> {
-    let file_path = format!("{}/config.json", data_dir);
+    let file_path = Path::new(&data_dir).join("config.json");
     
     // 确保目录存在
-    if let Some(parent) = Path::new(&file_path).parent() {
+    if let Some(parent) = file_path.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     
-    fs::write(&file_path, data).map_err(|e| e.to_string())?;
+    let is_new_file = !file_path.exists();
+    
+    fs::write(&file_path, &data).map_err(|e| e.to_string())?;
+    
+    if is_new_file {
+        println!("[Rust] 新建配置文件: {:?}", file_path);
+    } else {
+        println!("[Rust] 更新配置文件: {:?}", file_path);
+    }
+    
     Ok(())
 }
 
@@ -144,7 +153,7 @@ fn open_local_file() -> Result<String, String> {
 }
 
 #[tauri::command]
-fn init_git_repo(repo_url: String, data_dir: String) -> Result<String, String> {
+fn git_init(repo_url: String, data_dir: String) -> Result<String, String> {
     // 检查目录是否存在，不存在则创建
     if !Path::new(&data_dir).exists() {
         fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
@@ -233,12 +242,25 @@ fn git_add_commit_push(data_dir: String, commit_message: String) -> Result<Strin
         .map_err(|e| e.to_string())?;
     
     if !remote_url_output.status.success() {
-        return Err("未配置远程仓库地址，请先初始化 Git 仓库".to_string());
+        let stderr = String::from_utf8_lossy(&remote_url_output.stderr);
+        return Err(format!("获取远程仓库地址失败：{}", stderr));
     }
     
     let remote_url = String::from_utf8_lossy(&remote_url_output.stdout).trim().to_string();
     if remote_url.is_empty() {
         return Err("远程仓库地址为空，请配置有效的仓库地址".to_string());
+    }
+
+    // 验证是否为有效的 Git 仓库
+    let rev_parse_output = Command::new("git")
+        .current_dir(&data_dir)
+        .arg("rev-parse")
+        .arg("--is-inside-work-tree")
+        .output()
+        .map_err(|e| e.to_string())?;
+
+    if !rev_parse_output.status.success() {
+        return Err("当前目录不是有效的 Git 仓库，请先打开说明窗口配置远程仓库地址并初始化".to_string());
     }
     
     // 2. 检查 upstream 是否匹配
@@ -278,6 +300,8 @@ fn git_add_commit_push(data_dir: String, commit_message: String) -> Result<Strin
         .current_dir(&data_dir)
         .arg("add")
         .arg("goodsData.json")
+        .arg("config.json")
+        // .arg("stockData.json")
         .output()
         .map_err(|e| e.to_string())?;
     
@@ -379,12 +403,12 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             read_goods_data,
             save_goods_data,
-            read_storage_data,
-            save_storage_data,
+            read_stock_data,
+            save_stock_data,
             read_config,
             save_config,
             open_local_file,
-            init_git_repo,
+            git_init,
             git_add_commit_push,
             git_pull,
             get_data_dir,
