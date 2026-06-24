@@ -217,7 +217,7 @@ export function ConfigModal({
                     remainingAmountWarningThreshold: Number(e.target.value),
                   })
                 }
-                className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 min="0"
               />
               <span className="text-sm text-gray-500">元</span>
@@ -237,7 +237,7 @@ export function ConfigModal({
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none  disabled:opacity-50"
               >
                 {isProcessing ? "保存中..." : "保存配置"}
               </button>

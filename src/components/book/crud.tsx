@@ -262,7 +262,7 @@ export default function GoodsReminder() {
           <button
             title="config"
             onClick={handleConfig}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" />
           </button>
@@ -287,7 +287,7 @@ export default function GoodsReminder() {
             </button>
             <button
               onClick={handlePull}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
             >
               {isGitOperationRunning ? (
                 "请稍候..."
@@ -311,7 +311,7 @@ export default function GoodsReminder() {
             </button>
             <button
               onClick={handlePush}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none"
             >
               {isGitOperationRunning ? (
                 "请稍候..."

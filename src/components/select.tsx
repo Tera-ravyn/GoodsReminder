@@ -113,7 +113,7 @@ export const CustomSelect = ({
             <div className="sticky top-0 bg-white p-2 border-b z-50">
               <input
                 type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 placeholder="搜索..."
                 value={searchTerm}
                 onChange={handleSearchChange}

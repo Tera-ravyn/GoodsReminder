@@ -196,7 +196,7 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
           >
             关闭
           </button>
@@ -346,7 +346,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入商品名称"
                 />
               </div>
@@ -358,7 +358,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={ip}
                   onChange={(e) => setIp(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入商品IP"
                 />
               </div>
@@ -370,7 +370,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={leader}
                   onChange={(e) => setLeader(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入团长"
                 />
               </div>
@@ -382,7 +382,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   value={status}
                   title="status"
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 >
                   {goodsStatus.map((value) => (
                     <option key={value}>{value}</option>
@@ -398,7 +398,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   title="出荷日期"
                   value={shippingDate}
                   onChange={(e) => setShippingDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 />
               </div>
               <div>
@@ -409,7 +409,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="number"
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入已付款金额"
                   min="0"
                   step="0.01"
@@ -464,7 +464,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                         onChange={(e) =>
                           handleDetailChange(index, "name", e.target.value)
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                         placeholder="子物品名称"
                       />
                     </div>
@@ -479,7 +479,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                             parseInt(e.target.value) || 0,
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                         placeholder="数量"
                         min="1"
                       />
@@ -495,7 +495,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                             parseFloat(e.target.value) || 0,
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                         placeholder="单价"
                         step="0.01"
                       />
@@ -544,7 +544,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
             >
               保存
             </button>
@@ -685,7 +685,7 @@ export function GitIntroModal({
                 type="text"
                 value={repoUrl}
                 onChange={(e) => setRepoUrl(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 placeholder="例如: https://github.com/username/repository.git"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -706,7 +706,7 @@ export function GitIntroModal({
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none  disabled:opacity-50"
               >
                 {isProcessing ? "保存中..." : "保存配置"}
               </button>

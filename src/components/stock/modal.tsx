@@ -260,7 +260,7 @@ export function DetailModal({ isOpen, onClose, item }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
           >
             关闭
           </button>
@@ -372,7 +372,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={ip}
                   onChange={(e) => setIp(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入IP"
                 />
               </div>
@@ -385,7 +385,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入商品名称"
                 />
               </div>
@@ -397,7 +397,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入商品类别"
                 />
               </div>
@@ -409,7 +409,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="text"
                   value={character}
                   onChange={(e) => setCharacter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入相关角色"
                 />
               </div>
@@ -421,7 +421,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   value={status}
                   title="status"
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                 >
                   {statuses.map((value) => (
                     <option key={value}>{value}</option>
@@ -436,7 +436,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入商品数量"
                   min="1"
                 />
@@ -449,7 +449,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="number"
                   value={soldQuantity}
                   onChange={(e) => setSoldQuantity(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入售出数量"
                   min="1"
                 />
@@ -462,7 +462,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="number"
                   value={purchasePrice}
                   onChange={(e) => setpurchasePrice(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入买入金额"
                   min="0"
                   step="0.01"
@@ -476,7 +476,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                   type="number"
                   value={sellingPrice}
                   onChange={(e) => setsellingPrice(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入售出金额"
                   min="0"
                   step="0.01"
@@ -489,7 +489,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
                 <textarea
                   value={remark}
                   onChange={(e) => setRemark(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none "
                   placeholder="输入备注信息"
                   rows={3}
                 />
@@ -509,7 +509,7 @@ export function EditModal({ isOpen, onClose, item, onSave }: ModalProps) {
             <button
               type="submit"
               onClick={handleSave}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none "
             >
               保存
             </button>
